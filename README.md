@@ -1,6 +1,6 @@
 # CarryOut
 
-CarryOut facilitates connecting single-purpose units of logic into larger workflows via a small DSL.  Each unit can further extend the DSL with parameter methods.  Artifacts and errors are collected as the workflow executes and are returned in a result bundle upon completion.
+CarryOut connects units of logic into workflows.  Each unit can extend the DSL with parameter methods.  Artifacts and errors are collected as the workflow executes and are returned in a result bundle upon completion.
 
 [![Build Status](https://travis-ci.org/ryanfields/carry_out.svg?branch=master)](https://travis-ci.org/ryanfields/carry_out) [![Coverage Status](https://coveralls.io/repos/github/ryanfields/carry_out/badge.svg?branch=master)](https://coveralls.io/github/ryanfields/carry_out?branch=master)
 
