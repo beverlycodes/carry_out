@@ -36,9 +36,19 @@ class CarryOutTest < Minitest::Test
 
   def test_that_plan_can_execute_within_a_context_block
     plan = CarryOut
-      .within { |b| b.call test: 'test' }
+      .within { |proc| proc.call test: 'test' }
       .will(Echo, as: :echo)
       .message { |refs| refs[:test] }
+
+    result = plan.execute
+    assert_equal 'test', result.artifacts[:echo]
+  end
+
+  def test_that_plan_can_execute_with_empty_context
+    plan = CarryOut
+      .within { |proc| proc.call }
+      .will(Echo, as: :echo)
+      .message('test')
 
     result = plan.execute
     assert_equal 'test', result.artifacts[:echo]
