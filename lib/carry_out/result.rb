@@ -18,6 +18,10 @@ module CarryOut
       @errors ||= {}
     end
 
+    def success?
+      @errors.nil? || @errors.empty?
+    end
+
     private
       def add_error(group, error)
         group = errors[group] ||= []

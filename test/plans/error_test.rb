@@ -33,5 +33,6 @@ class ErrorTest < Minitest::Test
       .message { |refs| flunk "Execution should have stopped" }
 
     result = plan.execute
+    refute result.success?, "Expected result to indicate failure"
   end
 end

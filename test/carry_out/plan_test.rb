@@ -10,6 +10,7 @@ class PlanTest < Minitest::Test
   def test_that_execute_returns_a_result
     result = @plan.execute
     assert_kind_of Result, result
+    assert result.success?, 'Expected execution to be successful'
   end
 
   def test_that_execute_result_can_be_consumed_in_block
