@@ -21,7 +21,7 @@ Or install it yourself as:
 ## Usage
 
 Execution units extend CarryOut::Unit and should implement ```CarryOut::Unit#execute(result)```.
-```
+```ruby
 class SayHello < CarryOut::Unit
     def execute(result)
         puts "Hello, World!"
@@ -30,7 +30,7 @@ end
 ```
 
 CarryOut can then be used to create an execution plan using the unit.
-```
+```ruby
 plan = CarryOut.will(SayHello)
 ```
 
@@ -43,7 +43,7 @@ result = plan.execute
 Execution units can be passed parameters statically during plan creation, or dynamically via a block.
 
 Redefine the example above to greet someone by name:
-```
+```ruby
 class SayHello < CarryOut::Unit
     parameter :to, :name
     
@@ -54,7 +54,7 @@ end
 ```
 
 Define the plan as:
-```
+```ruby
 plan = CarryOut
     .will(SayHello)
     .to("Ryan")
@@ -71,7 +71,7 @@ And execute the same way as above.
 ### Artifacts and References
 Execution units can publish artifacts to the plan's result.  Parameter blocks can be used to pass these artifacts on to subsequent execution units in the plan.
 
-```
+```ruby
 class AddToCart < CarryOut::Unit
     parameter :items
     
@@ -89,7 +89,7 @@ class CalculateSubtotal < CarryOut::Unit
     end
 end
 ```
-```
+```ruby
 plan = CarryOut
     .will(AddToCart, as: :cart)
     .items([ item1, item2, item3])
@@ -119,7 +119,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/carry_out. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at https://github.com/ryanfields/carry_out. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
 ## License
 
