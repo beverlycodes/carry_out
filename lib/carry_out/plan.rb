@@ -5,6 +5,7 @@ module CarryOut
       @nodes = {}
       @node_meta = {}
       @previously_added_node = nil
+      @wrapper = options[:within]
 
       unless unit.nil?
         self.then(unit, options)
@@ -12,27 +13,17 @@ module CarryOut
     end
 
     def execute(&block)
-      id = @initial_node_key
-
-      Result.new.tap do |result|
-        while node = @nodes[id] do
-          publish_to = @node_meta[id][:as]
-          
-          begin
-            node_result = node.execute(result.artifacts)
-            result.add(publish_to, node_result) unless publish_to.nil?
-          rescue UnitError => error
-            result.add(publish_to || id, CarryOut::Error.new(error.error.message, error.error))
-            break
-          end
-
-          id = node.next
+      if @wrapper
+        @wrapper.execute do |context|
+          execute_internal(Result.new(context), &block)
         end
-
-        unless block.nil?
-          block.call(result)
-        end
+      else
+        execute_internal(&block)
       end
+    end
+
+    def will(*args)
+      self.then(*args)
     end
 
     def then(unit, options = {})
@@ -68,6 +59,30 @@ module CarryOut
         @previously_added_node = node
 
         id
+      end
+
+      def execute_internal(result = nil, &block)
+        id = @initial_node_key
+
+        (result || Result.new).tap do |result|
+          while node = @nodes[id] do
+            publish_to = @node_meta[id][:as]
+
+            begin
+              node_result = node.execute(result.artifacts)
+              result.add(publish_to, node_result) unless publish_to.nil?
+            rescue UnitError => error
+              result.add(publish_to || id, CarryOut::Error.new(error.error.message, error.error))
+              break
+            end
+
+            id = node.next
+          end
+
+          unless block.nil?
+            block.call(result)
+          end
+        end
       end
 
       def generate_node_name

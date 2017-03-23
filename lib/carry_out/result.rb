@@ -1,6 +1,10 @@
 module CarryOut
   class Result
 
+    def initialize(hash = nil)
+      @artifacts = Hash[hash] unless hash.nil?
+    end
+
     def add(group, object)
       if object.kind_of?(CarryOut::Error)
         add_error(group, object)

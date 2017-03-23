@@ -11,4 +11,8 @@ module CarryOut
   def self.will(*args)
     Plan.new(*args)
   end
+
+  def self.within(unit)
+    Plan.new(nil, within: unit)
+  end
 end
