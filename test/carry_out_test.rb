@@ -5,7 +5,7 @@ class CarryOutTest < Minitest::Test
     refute_nil ::CarryOut::VERSION
   end
 
-  def test_that_first_returns_a_plan_instance
+  def test_that_will_returns_a_plan_instance
     plan = CarryOut.will
     assert plan.instance_of?(CarryOut::Plan)
   end

@@ -8,9 +8,9 @@ module CarryOut
     end
 
     def method_missing(method, *args, &block)
-      if args.length == 1 || (args.length == 0 && !block.nil?)
+      if args.length <= 1 || (args.length == 0 && !block.nil?)
         if @unitClass.instance_methods.include?(method)
-          @messages << { method: method, argument: args.first, block: block }
+          @messages << { method: method, argument: args.first || true, block: block }
         else
           raise NoMethodError.new("#{@unitClass} instances do not respond to `#{method}'", method, *args)
         end
