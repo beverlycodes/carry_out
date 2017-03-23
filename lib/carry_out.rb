@@ -12,7 +12,7 @@ module CarryOut
     Plan.new(*args)
   end
 
-  def self.within(unit)
-    Plan.new(nil, within: unit)
+  def self.within(unit = nil, &block)
+    Plan.new(nil, within: unit || block)
   end
 end

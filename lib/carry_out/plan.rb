@@ -14,8 +14,14 @@ module CarryOut
 
     def execute(&block)
       if @wrapper
-        @wrapper.execute do |context|
-          execute_internal(Result.new(context), &block)
+        if @wrapper.respond_to?(:execute)
+          @wrapper.execute do |context|
+            execute_internal(Result.new(context), &block)
+          end
+        else
+          @wrapper.call(Proc.new do |context|
+            execute_internal(Result.new(context), &block)
+          end)
         end
       else
         execute_internal(&block)
