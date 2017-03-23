@@ -1,7 +1,7 @@
 module CarryOut
   class Unit
     
-    def execute(result)
+    def execute
     end
 
     def self.parameter(method_name, var = nil)

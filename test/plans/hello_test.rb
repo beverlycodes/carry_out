@@ -4,8 +4,8 @@ class HelloTest < Minitest::Test
   include CarryOut
 
   class Hello < Unit
-    def execute(result)
-      result.add(:hello, 'Hello')
+    def execute
+      'Hello'
     end
   end
 
@@ -14,6 +14,6 @@ class HelloTest < Minitest::Test
     result = plan.execute
 
     refute_nil result.artifacts[:test_unit]
-    assert_equal 'Hello', result.artifacts[:test_unit][:hello]
+    assert_equal 'Hello', result.artifacts[:test_unit]
   end
 end

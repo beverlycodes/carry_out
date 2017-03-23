@@ -6,8 +6,8 @@ class EchoTest < Minitest::Test
   class Echo < Unit
     parameter :message
 
-    def execute(result)
-      result.add(:message, @message)
+    def execute
+      { message: @message }
     end
   end
 

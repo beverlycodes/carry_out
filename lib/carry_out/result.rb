@@ -1,14 +1,18 @@
 module CarryOut
   class Result
 
-    def add(group, label, object = nil)
-      if label.kind_of?(CarryOut::Error)
-        add_error(group, label)
-      elsif !object.nil?
-        group = artifacts[group] ||= {}
-        group[label] = object
+    def add(group, object)
+      if object.kind_of?(CarryOut::Error)
+        add_error(group, object)
+      elsif object.kind_of?(Result)
+        add(group, object.to_hash)
+      elsif object.kind_of?(Hash)
+        artifacts[group] ||= {}
+        object.each { |k,v| artifacts[group][k] = v }
+      elsif !artifacts[group].nil?
+        artifacts[group] = [ artifacts[group], object ].flatten
       else
-        artifacts[group] = label
+        artifacts[group] = object
       end
     end
 
@@ -22,6 +26,10 @@ module CarryOut
 
     def success?
       @errors.nil? || @errors.empty?
+    end
+
+    def to_hash
+      artifacts
     end
 
     private

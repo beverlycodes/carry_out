@@ -6,16 +6,16 @@ class ReferencesTest < Minitest::Test
   class Send < Unit
     parameter :message
 
-    def execute(result)
-      result.add(:message, @message)
+    def execute
+      @message
     end
   end
 
   class Receive < Unit
     parameter :message
 
-    def execute(result)
-      result.add(:message, @message)
+    def execute
+      @message
     end
   end
 
@@ -26,10 +26,10 @@ class ReferencesTest < Minitest::Test
       .will(Send, as: :send)
       .message(message)
       .then(Receive, as: :receive)
-      .message { |refs| refs[:send][:message] }
+      .message { |refs| refs[:send] }
 
     plan.execute do |result|
-      assert_equal message, result.artifacts[:receive][:message]
+      assert_equal message, result.artifacts[:receive]
     end
   end
 end

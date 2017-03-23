@@ -27,16 +27,16 @@ module CarryOut
       @unitClass.instance_methods.include?(method) || super
     end
 
-    def execute(result, artifacts)
-      unit = @unitClass.new
+    def execute(context)
+      unit = @unitClass.respond_to?(:execute) ? @unitClass : @unitClass.new
 
       @messages.each do |message|
-        arg = message[:block] ? message[:block].call(artifacts) : message[:argument]
+        arg = message[:block] ? message[:block].call(context) : message[:argument]
         unit.send(message[:method], arg)
       end
 
       begin
-        unit.execute(result)
+        unit.execute
       rescue StandardError => error
         raise UnitError.new(error)
       end

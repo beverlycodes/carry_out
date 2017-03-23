@@ -3,8 +3,8 @@ module CarryOut
     
     def initialize(unit = nil, options = {})
       @nodes = {}
+      @node_meta = {}
       @previously_added_node = nil
-      @initial_node_key = add_node(PlanNode.new)
 
       unless unit.nil?
         self.then(unit, options)
@@ -12,19 +12,21 @@ module CarryOut
     end
 
     def execute(&block)
-      node = @nodes[@initial_node_key]
-      label = node.next unless node.nil?
+      id = @initial_node_key
 
       Result.new.tap do |result|
-        while node = @nodes[label] do
+        while node = @nodes[id] do
+          publish_to = @node_meta[id][:as]
+          
           begin
-            node.execute(ResultManipulator.new(result, label), result.artifacts)
+            node_result = node.execute(result.artifacts)
+            result.add(publish_to, node_result) unless publish_to.nil?
           rescue UnitError => error
-            result.add(label, CarryOut::Error.new(error.error.message, error.error))
+            result.add(publish_to || id, CarryOut::Error.new(error.error.message, error.error))
             break
           end
 
-          label = node.next
+          id = node.next
         end
 
         unless block.nil?
@@ -53,22 +55,19 @@ module CarryOut
 
     private
       def add_node(node, as = nil)
-        label = (as || generate_node_name)
+        id = generate_node_name
 
-        if as.nil?
-          until @nodes[label].nil?
-            label = generate_node_name
-          end
+        if @previously_added_node.nil?
+          @initial_node_key = id
+        else
+          @previously_added_node.next = id
         end
 
-        unless @previously_added_node.nil?
-          @previously_added_node.next = label
-        end
-
-        @nodes[label] = node
+        @nodes[id] = node
+        @node_meta[id] = { as: as }
         @previously_added_node = node
 
-        label
+        id
       end
 
       def generate_node_name

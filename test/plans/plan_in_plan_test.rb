@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class MultiUnitTest < Minitest::Test
+class PlanInPlanTest < Minitest::Test
   include CarryOut
 
   class Message < Unit
@@ -11,7 +11,7 @@ class MultiUnitTest < Minitest::Test
     end
   end
 
-  def test_that_execution_flows_through_multiple_units
+  def test_that_plans_can_be_used_in_place_of_units
     message = 'test'
     message2 = 'test2'
 
@@ -21,9 +21,12 @@ class MultiUnitTest < Minitest::Test
       .then(Message, as: :test_unit2)
       .message(message2)
 
-    result = plan.execute
+    plan2 = CarryOut
+      .will(plan, as: :plan1)
 
-    assert_equal message, result.artifacts[:test_unit]
-    assert_equal message2, result.artifacts[:test_unit2]
+    result = plan2.execute
+
+    assert_equal message, result.artifacts[:plan1][:test_unit]
+    assert_equal message2, result.artifacts[:plan1][:test_unit2]
   end
 end
