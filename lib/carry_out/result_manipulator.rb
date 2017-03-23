@@ -6,7 +6,7 @@ module CarryOut
       @group = group
     end
 
-    def add(label, object)
+    def add(label, object = nil)
       @result.add(@group, label, object) unless @group.nil?
     end
   end

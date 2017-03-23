@@ -4,9 +4,11 @@ module CarryOut
     def add(group, label, object = nil)
       if label.kind_of?(CarryOut::Error)
         add_error(group, label)
-      else
+      elsif !object.nil?
         group = artifacts[group] ||= {}
         group[label] = object
+      else
+        artifacts[group] = label
       end
     end
 
