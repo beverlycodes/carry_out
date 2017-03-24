@@ -25,9 +25,9 @@ Or install it yourself as:
 Execution units extend CarryOut::Unit and should implement ```CarryOut::Unit#execute(result)```.
 ```ruby
 class SayHello < CarryOut::Unit
-    def execute(result)
-        puts "Hello, World!"
-    end
+  def execute(result)
+    puts "Hello, World!"
+  end
 end
 ```
 
@@ -47,48 +47,51 @@ Execution units can be passed parameters statically during plan creation, or dyn
 Redefine the example above to greet someone by name:
 ```ruby
 class SayHello < CarryOut::Unit
-    parameter :to, :name
+  parameter :to, :name
     
-    def execute(result)
-        puts "Hello, #{@name}!"
-    end
+  def execute(result)
+    puts "Hello, #{@name}!"
+  end
 end
 ```
 
 Define the plan as:
 ```ruby
 plan = CarryOut
-    .will(SayHello)
-    .to("Ryan")
+  .will(SayHello)
+  .to("Ryan")
     
 # or
 
 plan = CarryOut
-    .will(SayHello)
-    .to { "Ryan" }
+  .will(SayHello)
+  .to { "Ryan" }
 ```
 
 And execute the same way as above.
 
-### Artifacts and References
-Execution units can publish artifacts to the plan's result.  Parameter blocks can be used to pass these artifacts on to subsequent execution units in the plan.
+### Results and Artifact References
+
+Plan executions return a `CarryOut::Result` object that contains any artifacts returned by units (in `Result#artifacts`), along with any errors raised (in `Result#errors`).  If `errors` is empty, `Result#success?` will return `true`.
+
+Parameter blocks can be used to pass result artifacts on to subsequent execution units in the plan.
 
 ```ruby
 class AddToCart < CarryOut::Unit
-    parameter :items
+  parameter :items
     
-    def execute(result)
-        result.add :contents, @items
-    end
+  def execute(result)
+    result.add :contents, @items
+  end
 end
 
 class CalculateSubtotal < CarryOut::Unit
-    parameters :items
+  parameters :items
     
-    def execut(result)
-        subtotal = items.inject { |sum, item| sum + item.price }
-        result.add :subtotal, subtotal
-    end
+  def execut(result)
+    subtotal = items.inject { |sum, item| sum + item.price }
+    result.add :subtotal, subtotal
+  end
 end
 ```
 ```ruby
@@ -99,9 +102,60 @@ plan = CarryOut
     .items { |refs| refs[:cart][:contents] }
     
 plan.execute do |result|
-    puts "Subtotal: #{result.artifacts[:invoice][:subtotal]}"
+  puts "Subtotal: #{result.artifacts[:invoice][:subtotal]}"
 end
 ```
+
+### Wrapping the Execution Context
+
+Contexts can be "baked into" a plan for purposes such as ensuring files get closed, or keeping the entire plan within a database transaction.
+
+```ruby
+class FileContext
+  def initialize(file_path)
+    @file_path = file_path
+  end
+  
+  def execute
+    File.open(@file_path, "r") do |f|
+      yield file: f
+    end
+  end
+end
+
+plan = CarryOut
+  .within(Transaction.new("path/to/file")  # Expects instance, not class
+  .will(DoAThing)
+    .with_file { |refs| refs[:file] }
+```
+
+The wrapping context can also be a block.
+
+```ruby
+plan = CarryOut
+  .within { |proc| ActiveRecordBase.transaction { proc.call } }
+  .will(CreateModel)
+```
+
+When using a block, `proc.call` can be used to seed the references hash in the same manner as `yield` in the first example.
+
+Wrapper contexts will always be applied to an entire plan.  If a plan has multiple phases that need to be wrapped in different contexts, it is better to create multiple plans and embed them together in a larger plan as shown below.
+
+### Embedding Plans
+
+A plan can be used in place of a `CarryOut::Unit`.  This allows plans to be reused as part of larger strategies.
+
+```ruby
+inner_plan = CarryOut.will(SayHello)
+
+outer_plan = CarryOut
+  .will(DisplayBanner)
+  .then(inner_plan)
+```
+
+Passing a plan to `#then` works similar to passing a `CarryOut::Unit` class or instance.  If the `as` option is added, the inner plan's result artifacts will be added to the outer plan's result at the specified key.
+
+**One caveat to be aware of**:  There is no way to specify parameters for an embedded plan.  If an embedded plan depends on an external context, `CarryOut#within` is sufficient to work around this limitation.  However, there is currently no way for an inner plan to access an outer plan's artifacts.  This is considered a bug and will be fixed in a future release.
 
 ## Motivation
 
