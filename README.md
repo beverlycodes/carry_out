@@ -202,6 +202,22 @@ Passing a plan to `#then` works similar to passing a `CarryOut::Unit` class or i
 
 **One caveat to be aware of**:  There is no way to specify initial artifacts for an embedded plan.  If an embedded plan depends on an external context, `CarryOut#within` is sufficient to work around this limitation.  However, there is currently no way for an inner plan to access an outer plan's artifacts.  This is considered a bug and will be fixed in a future release.
 
+### Conditional Units
+
+Use the `if` or `unless` directive to conditionally execute a unit.
+
+```ruby
+plan = CarryOut
+    .will(SayHello)
+    .if { |refs| refs[:audible] }
+```
+
+```ruby
+plan = CarryOut
+    .will(SayHello)
+    .unless { |refs| refs[:silenced] }
+```
+
 ## Motivation
 
 I've been trying to keep my Rails controllers clean, but I prefer to avoid shoving inter-model business logic inside database models.  The recommendation I most frequently run into is to move that kind of logic into something akin to service objects.  I like that idea, but I want to keep my services small and composable, and I want to separate the "what" from the "how" of my logic.
