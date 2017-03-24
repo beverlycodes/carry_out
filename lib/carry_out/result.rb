@@ -14,7 +14,7 @@ module CarryOut
         artifacts[group] ||= {}
         object.each { |k,v| artifacts[group][k] = v }
       elsif !artifacts[group].nil?
-        artifacts[group] = [ artifacts[group], object ].flatten
+        artifacts[group] = [ artifacts[group], object ].flatten(1)
       else
         artifacts[group] = object
       end
