@@ -137,9 +137,23 @@ plan.execute do |result|
 end
 ```
 
-### Wrapping the Execution Context
+### Initial Artifacts
 
-Contexts can be "baked into" a plan for purposes such as ensuring files get closed, or keeping the entire plan within a database transaction.
+`Plan#execute` accepts a hash that will seed the initial result artifacts.
+
+```ruby
+plan = CarryOut
+  .will(SayHello)
+  .to { |refs| refs[:name] }
+
+plan.execute(name: 'John')
+```
+
+### Wrapping Execution
+
+Plan execution can be wrapped for purposes such as ensuring files get closed or to run the plan inside a database transaction.  Wrapping also provides an alternative mechanism for injecting initial artifacts into the plan result.
+
+If `Plan#execute` is passed an initial artifact hash, and a wrapper injects an artifact hash, the two will be merged.  The wrapper hash will get priority.
 
 ```ruby
 class FileContext
@@ -177,16 +191,16 @@ Wrapper contexts will always be applied to an entire plan.  If a plan has multip
 A plan can be used in place of a `CarryOut::Unit`.  This allows plans to be reused as part of larger strategies.
 
 ```ruby
-inner_plan = CarryOut.will(SayHello)
+say_hello = CarryOut.will(SayHello)
 
-outer_plan = CarryOut
+plan = CarryOut
   .will(DisplayBanner)
-  .then(inner_plan)
+  .then(say_hello)
 ```
 
 Passing a plan to `#then` works similar to passing a `CarryOut::Unit` class or instance.  If the `as` option is added, the inner plan's result artifacts will be added to the outer plan's result at the specified key.
 
-**One caveat to be aware of**:  There is no way to specify parameters for an embedded plan.  If an embedded plan depends on an external context, `CarryOut#within` is sufficient to work around this limitation.  However, there is currently no way for an inner plan to access an outer plan's artifacts.  This is considered a bug and will be fixed in a future release.
+**One caveat to be aware of**:  There is no way to specify initial artifacts for an embedded plan.  If an embedded plan depends on an external context, `CarryOut#within` is sufficient to work around this limitation.  However, there is currently no way for an inner plan to access an outer plan's artifacts.  This is considered a bug and will be fixed in a future release.
 
 ## Motivation
 

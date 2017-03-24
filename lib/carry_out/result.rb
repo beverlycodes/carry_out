@@ -1,8 +1,8 @@
 module CarryOut
   class Result
 
-    def initialize(hash = nil)
-      @artifacts = Hash[hash] unless hash.nil?
+    def initialize(*args)
+      @artifacts = args.compact.reduce(&:merge) || Hash.new
     end
 
     def add(group, object)

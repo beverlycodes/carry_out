@@ -12,19 +12,19 @@ module CarryOut
       end
     end
 
-    def execute(&block)
+    def execute(context = nil, &block)
       if @wrapper
         if @wrapper.respond_to?(:execute)
-          @wrapper.execute do |context|
-            execute_internal(Result.new(context), &block)
+          @wrapper.execute do |wrapper_context|
+            execute_internal(Result.new(context, wrapper_context), &block)
           end
         else
-          @wrapper.call(Proc.new do |context|
-            execute_internal(Result.new(context), &block)
-          end)
+          @wrapper.call(Proc.new { |wrapper_context|
+            execute_internal(Result.new(context, wrapper_context), &block)
+          })
         end
       else
-        execute_internal(&block)
+        execute_internal(Result.new(context), &block)
       end
     end
 
