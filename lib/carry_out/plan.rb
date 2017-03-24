@@ -67,28 +67,28 @@ module CarryOut
         id
       end
 
-      def execute_internal(result = nil, &block)
+      def execute_internal(result = Result.new, &block)
         id = @initial_node_key
 
-        (result || Result.new).tap do |r|
-          while node = @nodes[id] do
-            publish_to = @node_meta[id][:as]
+        until (node = @nodes[id]).nil? do
+          publish_to = @node_meta[id][:as]
 
-            begin
-              node_result = node.execute(r.artifacts)
-              r.add(publish_to, node_result) unless publish_to.nil?
-            rescue UnitError => error
-              r.add(publish_to || id, CarryOut::Error.new(error.error.message, error.error))
-              break
-            end
-
-            id = node.next
+          begin
+            node_result = node.execute(result.artifacts)
+            result.add(publish_to, node_result) unless publish_to.nil?
+          rescue UnitError => error
+            result.add(publish_to || id, CarryOut::Error.new(error.error.message, error.error))
+            break
           end
 
-          unless block.nil?
-            block.call(r)
-          end
+          id = node.next
         end
+
+        unless block.nil?
+          block.call(result)
+        end
+
+        result
       end
 
       def generate_node_name
