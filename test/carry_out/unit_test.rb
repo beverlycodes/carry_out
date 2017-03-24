@@ -26,4 +26,28 @@ class UnitTest < Minitest::Test
     assert_includes unit.value, value
     assert_includes unit.value, value2
   end
+
+  def test_that_appending_parameter_works_in_isolation
+    value = 'test'
+
+    unit = ParameterizedUnit.new
+      .and_test(value)
+
+    assert_kind_of Array, unit.value
+    assert unit.value.length == 1, "Expected length of #{unit.value.length} to be 1"
+    assert_includes unit.value, value
+  end
+
+  def test_that_explicit_nil_is_appended_to
+    value = 'test'
+
+    unit = ParameterizedUnit.new
+      .with_test(nil)
+      .and_test(value)
+
+    assert_kind_of Array, unit.value
+    assert unit.value.length == 2, "Expected length of #{unit.value.length} to be 2"
+    assert_includes unit.value, nil
+    assert_includes unit.value, value
+  end
 end

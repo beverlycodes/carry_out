@@ -44,6 +44,8 @@ result = plan.execute
 ### Parameters
 Execution units can be passed parameters statically during plan creation, or dynamically via a block.
 
+#### parameter
+
 Redefine the example above to greet someone by name:
 ```ruby
 class SayHello < CarryOut::Unit
@@ -69,6 +71,35 @@ plan = CarryOut
 ```
 
 And execute the same way as above.
+
+#### appending_parameter
+
+Appending parameters will convert the value of an existing parameter to an array and push new values into that array.  These parameters can improve the readability of a plan, and are also helpful if creating a plan dynamically.
+
+```ruby
+class SayHello < CarryOut::Unit
+  parameter :to, :names
+  appending_parameter :and, :names
+
+  def execute
+    puts "Hello, #{@names}.join(", ")}!"
+  end
+end
+
+plan = CarryOut
+  .will(SayHello)
+  .to("John")
+  .and("Jane")
+  .and("Ryan")
+```
+
+Unlike `parameter`, `appending_parameter` must provide both a method name and an instance variable name.
+
+A non-appending parameter does not need to be called (or even exist) in order for appending parameters to operate.
+
+Calling the non-appending version of a parameter *after* calling the appending version will result in the array being lost, replaced by the explicit non-appending value provided.
+
+A unit may wish to provide the syntactic sugar while ensuring the underlying instance variable is always an array.  This can be accomplished by defining two (or more) appending parameters pointed at the same instance variable.
 
 ### Results and Artifact References
 
