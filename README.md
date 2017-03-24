@@ -124,7 +124,7 @@ class FileContext
 end
 
 plan = CarryOut
-  .within(Transaction.new("path/to/file"))  # Expects instance, not class
+  .within(FileContext.new("path/to/file"))  # Expects instance, not class
   .will(DoAThing)
     .with_file { |refs| refs[:file] }
 ```
