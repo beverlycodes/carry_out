@@ -5,15 +5,15 @@ module CarryOut
     end
 
     def self.appending_parameter(method_name, var)
-      var = var.to_s
       instance_var = "@#{var}"
 
       define_method(method_name.to_sym) do |value|
-        existing = if instance_variable_defined?(instance_var)
-          [ instance_variable_get("@#{var.to_s}") ].flatten(1)
-        else
-          []
-        end
+        existing = 
+          if instance_variable_defined?(instance_var)
+            [ instance_variable_get("@#{var}") ].flatten(1)
+          else
+            []
+          end
         
         instance_variable_set(instance_var, (existing || []) << value)
         self
@@ -23,7 +23,7 @@ module CarryOut
     def self.parameter(method_name, var = nil)
       unless var.nil?
         define_method(method_name.to_sym) do |value|
-          instance_variable_set("@#{var.to_s}", value)
+          instance_variable_set("@#{var}", value)
           self
         end
       end

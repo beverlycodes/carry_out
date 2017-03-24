@@ -70,15 +70,15 @@ module CarryOut
       def execute_internal(result = nil, &block)
         id = @initial_node_key
 
-        (result || Result.new).tap do |result|
+        (result || Result.new).tap do |r|
           while node = @nodes[id] do
             publish_to = @node_meta[id][:as]
 
             begin
-              node_result = node.execute(result.artifacts)
-              result.add(publish_to, node_result) unless publish_to.nil?
+              node_result = node.execute(r.artifacts)
+              r.add(publish_to, node_result) unless publish_to.nil?
             rescue UnitError => error
-              result.add(publish_to || id, CarryOut::Error.new(error.error.message, error.error))
+              r.add(publish_to || id, CarryOut::Error.new(error.error.message, error.error))
               break
             end
 
@@ -86,7 +86,7 @@ module CarryOut
           end
 
           unless block.nil?
-            block.call(result)
+            block.call(r)
           end
         end
       end
