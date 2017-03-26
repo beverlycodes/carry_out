@@ -8,20 +8,8 @@ module CarryOut
     end
 
     def method_missing(method, *args, &block)
-      if args.length <= 1 || (args.length == 0 && !block.nil?)
-        if @unitClass.instance_methods.include?(method)
-          if args.first.kind_of?(Reference)
-            if block.nil?
-              @messages << { method: method, block: args.first }
-            else
-              raise ArgumentError.new("References and blocks are mutually exclusive")
-            end
-          else
-            @messages << { method: method, argument: args.first || true, block: block }
-          end
-        else
-          raise NoMethodError.new("#{@unitClass} instances do not respond to `#{method}'", method, *args)
-        end
+      if is_parameter_method?(*args, &block)
+        append_message(method, *args, &block)
       else
         super
       end
@@ -53,5 +41,26 @@ module CarryOut
     def next=(value)
       @next = value.to_sym
     end
+
+    private
+      def append_message(method, *args, &block)
+        if @unitClass.instance_methods.include?(method)
+          if args.first.kind_of?(Reference)
+            if block.nil?
+              @messages << { method: method, block: args.first }
+            else
+              raise ArgumentError.new("References and blocks are mutually exclusive")
+            end
+          else
+            @messages << { method: method, argument: args.first || true, block: block }
+          end
+        else
+          raise NoMethodError.new("#{@unitClass} instances do not respond to `#{method}'", method, *args)
+        end
+      end
+      
+      def is_parameter_method?(*args, &block)
+        args.length <= 1 || (args.length == 0 && !block.nil?)
+      end
   end
 end
