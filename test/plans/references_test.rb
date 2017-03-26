@@ -32,4 +32,32 @@ class ReferencesTest < Minitest::Test
       assert_equal message, result.artifacts[:receive]
     end
   end
+
+  def test_that_unit_references_are_accessible_via_reference_resolver
+    message = 'test'
+
+    plan = CarryOut
+      .will(Send, as: :send)
+      .message(message)
+      .then(Receive, as: :receive)
+      .message(CarryOut.get(:send))
+
+    plan.execute do |result|
+      assert_equal message, result.artifacts[:receive]
+    end
+  end
+
+  def test_that_reference_resolver_returns_nil_for_bad_keys
+    message = 'test'
+
+    plan = CarryOut
+      .will(Send, as: :send)
+      .message(message)
+      .then(Receive, as: :receive)
+      .message(CarryOut.get(:send, :test))
+
+    plan.execute do |result|
+      assert_nil result.artifacts[:receive]
+    end
+  end
 end

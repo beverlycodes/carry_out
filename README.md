@@ -105,7 +105,7 @@ A unit may wish to provide the syntactic sugar while ensuring the underlying ins
 
 Plan executions return a `CarryOut::Result` object that contains any artifacts returned by units (in `Result#artifacts`), along with any errors raised (in `Result#errors`).  If `errors` is empty, `Result#success?` will return `true`.
 
-Parameter blocks can be used to pass result artifacts on to subsequent execution units in the plan.
+References via `CarryOut#get` or via blocks can be used to pass result artifacts on to subsequent execution units in the plan.
 
 ```ruby
 class AddToCart < CarryOut::Unit
@@ -127,11 +127,12 @@ end
 ```
 ```ruby
 plan = CarryOut
-    .will(AddToCart, as: :cart)
-    .items([ item1, item2, item3])
-    .then(CalculateSubtotal, as: :invoice)
-    .items { |refs| refs[:cart][:contents] }
-    
+  .will(AddToCart, as: :cart)
+  .items([ item1, item2, item3])
+  .then(CalculateSubtotal, as: :invoice)
+  .items(CarryOut.get(:cart, :contents) 
+  # or .items { |refs| refs[:cart][:contents] }
+
 plan.execute do |result|
   puts "Subtotal: #{result.artifacts[:invoice][:subtotal]}"
 end
@@ -144,7 +145,7 @@ end
 ```ruby
 plan = CarryOut
   .will(SayHello)
-  .to { |refs| refs[:name] }
+  .to(CarryOut.get(:name))
 
 plan.execute(name: 'John')
 ```
@@ -171,7 +172,7 @@ end
 plan = CarryOut
   .within(FileContext.new("path/to/file"))  # Expects instance, not class
   .will(DoAThing)
-    .with_file { |refs| refs[:file] }
+  .with_file(CarryOut.get(:file))
 ```
 
 The wrapping context can also be a block.
@@ -208,14 +209,16 @@ Use the `if` or `unless` directive to conditionally execute a unit.
 
 ```ruby
 plan = CarryOut
-    .will(SayHello)
-    .if { |refs| refs[:audible] }
+  .will(SayHello)
+  .if { |refs| refs[:audible] }
+  # or .if(CarryOut.get(:audible))
 ```
 
 ```ruby
 plan = CarryOut
-    .will(SayHello)
-    .unless { |refs| refs[:silenced] }
+  .will(SayHello)
+  .unless { |refs| refs[:silenced] }
+  # or .unless(CarryOut.get(:silenced))
 ```
 
 ## Motivation

@@ -10,7 +10,15 @@ module CarryOut
     def method_missing(method, *args, &block)
       if args.length <= 1 || (args.length == 0 && !block.nil?)
         if @unitClass.instance_methods.include?(method)
-          @messages << { method: method, argument: args.first || true, block: block }
+          if args.first.kind_of?(Reference)
+            if block.nil?
+              @messages << { method: method, block: args.first }
+            else
+              raise ArgumentError.new("References and blocks are mutually exclusive")
+            end
+          else
+            @messages << { method: method, argument: args.first || true, block: block }
+          end
         else
           raise NoMethodError.new("#{@unitClass} instances do not respond to `#{method}'", method, *args)
         end
