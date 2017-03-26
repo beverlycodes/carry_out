@@ -58,12 +58,11 @@ module CarryOut
     default_carry_out.send(method, *args, &block)
   end
 
-  private
-    def self.default_options
-      @default_options ||= Hash.new
-    end
+  def self.default_options
+    @default_options ||= Hash.new
+  end
 
-    def self.default_carry_out
-      @default_carry_out ||= ConfiguredCarryOut.new(default_options)
-    end
+  def self.default_carry_out
+    @default_carry_out ||= ConfiguredCarryOut.new(default_options)
+  end
 end
