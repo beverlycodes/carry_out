@@ -28,11 +28,11 @@ module CarryOut
       end
     end
 
-    def if(&block)
+    def if(reference = nil, &block)
       raise NoMethodError("Conditional execution must be applied to a unit") unless @previously_added_node
 
       guards = node_meta(@previously_added_node)[:guards] ||= []
-      guards << block
+      guards << (reference || block)
 
       self
     end
@@ -46,8 +46,8 @@ module CarryOut
       self
     end
 
-    def unless(&block)
-      self.if { |refs| !block.call(refs) }
+    def unless(reference = nil, &block)
+      self.if { |refs| !(reference || block).call(refs) }
       
       self
     end

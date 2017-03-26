@@ -22,6 +22,17 @@ class IfTest < Minitest::Test
     assert_equal 'test', result.artifacts[:echo]
   end
 
+  def test_that_if_accepts_a_reference
+    plan = Plan.new(Echo, as: :echo)
+      .message('test')
+      .if(CarryOut.get(:audible))
+
+    result = plan.execute(audible: true)
+
+    refute_nil result.artifacts[:echo]
+    assert_equal 'test', result.artifacts[:echo]
+  end
+
   def test_that_nodes_guarded_by_unless_can_execute
     plan = Plan.new(Echo, as: :echo)
       .message('test')
