@@ -1,15 +1,17 @@
 module CarryOut
   class Plan
-    
+    MATCH_CONTINUATION_METHOD = /^(?:will|then)_(.+)/
+    MATCH_CONTEXT_METHOD = /^within_(.+)/
+    MATCH_RETURNING_METHOD = /^returning_as_(.+)/
+
     def initialize(unit = nil, options = {})
       @nodes = {}
       @node_meta = {}
       @previously_added_node = nil
       @wrapper = options[:within]
+      @search = options[:search] || []
 
-      unless unit.nil?
-        self.then(unit, options)
-      end
+      self.then(unit, options) unless unit.nil?
     end
 
     def execute(context = nil, &block)
@@ -41,8 +43,8 @@ module CarryOut
       self.then(*args)
     end
 
-    def then(unit, options = {})
-      add_node(PlanNode.new(unit), options[:as])
+    def then(unit = nil, options = {})
+      add_node(PlanNode.new(unit), options[:as]) unless unit.nil?
       self
     end
 
@@ -53,8 +55,21 @@ module CarryOut
     end
 
     def method_missing(method, *args, &block)
-      if @previously_added_node
-        @previously_added_node.send(method, *args, &block)
+      if MATCH_CONTINUATION_METHOD =~ method
+        obj = find_object($1)
+        return super if obj.nil?
+        self.then(obj, *args, &block)
+      elsif MATCH_CONTEXT_METHOD =~ method
+        obj = find_object($1)
+        return super if obj.nil?
+        @wrapper = obj.new
+        self
+      elsif @previously_added_node
+        if MATCH_RETURNING_METHOD =~ method
+          node_meta(@previously_added_node)[:as] = $1.to_sym
+        else
+          @previously_added_node.send(method, *args, &block)
+        end
         self
       else
         super
@@ -106,7 +121,18 @@ module CarryOut
           node_result = node.execute(result.artifacts)
           result.add(publish_to, node_result) unless publish_to.nil?
         rescue UnitError => error
-          result.add(publish_to || id, CarryOut::Error.new(error.error.message, error.error))
+          result.add(publish_to || key_for_node(node), CarryOut::Error.new(error.error.message, error.error))
+        end
+      end
+
+      def find_object(name)
+        constant_name = name.to_s.split('_').map { |w| w.capitalize }.join('')
+
+        if @search.respond_to?(:call)
+          @search.call(constant_name)
+        else
+          containing_module = @search.find { |m| m.const_get(constant_name) rescue nil }
+          containing_module.const_get(constant_name) unless containing_module.nil?
         end
       end
 
@@ -121,8 +147,12 @@ module CarryOut
         guards.nil? || guards.map { |guard| guard.call(artifacts) }.all?
       end
 
+      def key_for_node(node)
+        @nodes.key(node)
+      end
+
       def node_meta(node)
-        @node_meta[@nodes.key(node)]
+        @node_meta[key_for_node(node)]
       end
   end
 end

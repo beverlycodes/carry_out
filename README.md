@@ -221,6 +221,53 @@ plan = CarryOut
   # or .unless(CarryOut.get(:silenced))
 ```
 
+### Magic Directives (Experimental)
+
+*This feature is highly experimental.  It has not been thoroughly tested in larger application environments like Rails and is not yet guaranteed to remain part of this gem.*
+
+CarryOut provides some magic methods that can improve the readability of a plan.  These rely on a search strategy to find classes by name.  A very limited strategy is provided out-of-the-box.  This strategy accepts an array of modules and will only find classes that are direct children of any of the provided modules.  The first match gets priority.
+
+```ruby
+CarryOut.defaults = {
+  search: [ MyModule1 ]
+}
+```
+
+If the default strategy is insufficient (and it most likely will be), a custom strategy can be provided as a lambda/Proc.  For example, a strategy that works in Rails is to put the following in an initializer:
+
+```ruby
+CarryOut.defaults = {
+  search: -> (name) { name.constantize }
+}
+```
+
+#### Magic will\_, then\_, and within\_
+
+The magic versions of `will`, `then`, and `within` will use the configured search strategy to convert the remaning portion of the directive into a class reference.
+
+Using the default strategy as configured above:
+```ruby
+module MyModule1
+  class SayHello
+    def execute; puts "Hello!"; end
+  end
+end
+
+plan = CarryOut.will_say_hello
+```
+
+#### Magic returning\_as\_
+
+The magic `returning_as_` directive is an alternative to passing the `as:` option to a `will`/`then` directive.  The remainder of the directive becomes the key symbol into which the unit's return value will be stored.
+
+```ruby
+plan = CarryOut
+  .will_receive_message
+    .returning_as_message
+  .then_log
+    .message(CarryOut.get(:message))
+```
+
 ## Motivation
 
 I've been trying to keep my Rails controllers clean, but I prefer to avoid shoving inter-model business logic inside database models.  The recommendation I most frequently run into is to move that kind of logic into something akin to service objects.  I like that idea, but I want to keep my services small and composable, and I want to separate the "what" from the "how" of my logic.

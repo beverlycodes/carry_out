@@ -26,10 +26,10 @@ class PlanTest < Minitest::Test
   end
 
   def test_that_plan_can_be_created_with_unit
-    assert Plan.new(Object.new)
+    assert Plan.new(Object)
   end
 
   def test_that_plan_can_be_created_with_unit_and_options
-    assert Plan.new(Object.new, as: 'object')
+    assert Plan.new(Object, as: 'object')
   end
 end

@@ -20,6 +20,19 @@ class ArtifactsTest < Minitest::Test
     end
   end
 
+  def test_that_returning_as_sets_context_key
+    message = 'test'
+
+    plan = CarryOut
+      .will(Echo)
+      .message(message)
+      .returning_as_message
+
+    result = plan.execute
+
+    assert_equal message, result.artifacts[:message]
+  end
+
   def test_that_unit_sets_top_level_artifact
     message = 'test'
 

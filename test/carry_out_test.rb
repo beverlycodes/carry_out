@@ -34,6 +34,17 @@ class CarryOutTest < Minitest::Test
     assert_equal 'test', result.artifacts[:echo]
   end
 
+  def test_that_plan_can_execute_within_a_magic_context
+    plan = CarryOut
+      .configured_with(search: [ CarryOutTest ])
+      .within_context
+      .will(Echo, as: :echo)
+      .message { |refs| refs[:test] }
+
+    result = plan.execute
+    assert_equal 'test', result.artifacts[:echo]
+  end
+
   def test_that_plan_can_execute_within_a_context_block
     plan = CarryOut
       .within { |proc| proc.call test: 'test' }
