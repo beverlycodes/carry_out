@@ -15,6 +15,11 @@ class UnitTest < Minitest::Test
     assert_equal value, unit.value
   end
 
+  def test_that_parameter_provides_attribute_writer
+    unit = ParameterizedUnit.new
+    assert unit.respond_to?('value=')
+  end
+
   def test_that_appending_parameter_converts_to_array
     value = 'test'
     value2 = 'test2'

@@ -25,6 +25,14 @@ class PlanTest < Minitest::Test
     end
   end
 
+  def test_that_plan_fails_normally_on_missing_method_with_at_least_one_unit
+    plan = Plan.new(Object)
+
+    assert_raises NoMethodError do
+      plan.bad_method
+    end
+  end
+
   def test_that_plan_can_be_created_with_unit
     assert Plan.new(Object)
   end

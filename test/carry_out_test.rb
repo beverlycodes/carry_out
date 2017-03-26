@@ -64,4 +64,10 @@ class CarryOutTest < Minitest::Test
     result = plan.execute
     assert_equal 'test', result.artifacts[:echo]
   end
+
+  def test_that_method_missing_falls_back_to_super
+    assert_raises NoMethodError do
+      CarryOut.bad_method
+    end
+  end
 end

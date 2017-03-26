@@ -47,6 +47,26 @@ class ReferencesTest < Minitest::Test
     end
   end
 
+  def test_that_plan_does_not_allow_passing_resolver_and_block
+    message = 'test'
+
+    assert_raises ArgumentError do
+      plan = CarryOut
+        .will(Send, as: :send)
+        .message(CarryOut.get(:message)) { |refs| refs[:message] }
+    end
+  end
+
+  def test_that_plan_does_not_allow_passing_value_and_block
+    message = 'test'
+
+    assert_raises ArgumentError do
+      plan = CarryOut
+        .will(Send, as: :send)
+        .message(message) { |refs| refs[:message] }
+    end
+  end
+
   def test_that_reference_resolver_returns_nil_for_bad_keys
     message = 'test'
 

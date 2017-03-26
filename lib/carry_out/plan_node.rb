@@ -15,10 +15,6 @@ module CarryOut
       end
     end
 
-    def raises?(klass)
-      @unitClass.raises?(klass)
-    end
-
     def respond_to?(method)
       @unitClass.instance_methods.include?(method) || super
     end
@@ -44,13 +40,13 @@ module CarryOut
 
     private
       def append_message(method, *args, &block)
+        if !args.first.nil? && !block.nil?
+          raise ArgumentError.new("Arguments, references, and blocks are mutually exclusive")
+        end
+
         if @unitClass.instance_methods.include?(method)
           if args.first.kind_of?(Reference)
-            if block.nil?
-              @messages << { method: method, block: args.first }
-            else
-              raise ArgumentError.new("References and blocks are mutually exclusive")
-            end
+            @messages << { method: method, block: args.first }
           else
             @messages << { method: method, argument: args.first || true, block: block }
           end
