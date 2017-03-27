@@ -1,10 +1,9 @@
 module CarryOut
-  class Error
+  class Error < StandardError
     attr_reader :details
-    attr_reader :message
 
     def initialize(message, details = nil)
-      @message = message
+      super message
       @details = details
     end
   end
