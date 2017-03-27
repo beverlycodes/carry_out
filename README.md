@@ -289,23 +289,23 @@ While a contrived example, the following illustrates the improved readability of
 ```ruby
 plan = CarryOut
   .within_order_transaction
-      .will_order_bagel
-        .flavored('everything')
-        .toasted
-        .topped_with('butter')
-        .and('strawberry cream cheese')
-        .returning_as_bagel
-      .then_order_coffee
-        .with_cream
-        .and_sugar
-        .returning_as_coffee
-      .then_calculate_order_total
-        .for { result_of_bagel }
-        .and { result_of_coffee }
-      .then_swipe_credit_card
-        .returning_as_cc
-      .then_pay
-        .with_credit_card { result_of_cc }
+    .will_order_bagel
+      .flavored('everything')
+      .toasted
+      .topped_with('butter')
+      .and('strawberry cream cheese')
+      .returning_as_bagel
+    .then_order_coffee
+      .with_cream
+      .and_sugar
+      .returning_as_coffee
+    .then_calculate_order_total
+      .for { result_of_bagel }
+      .and { result_of_coffee }
+    .then_swipe_credit_card
+      .returning_as_cc
+    .then_pay
+      .with_credit_card { result_of_cc }
 ```
 
 ## Motivation
