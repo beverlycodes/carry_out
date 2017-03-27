@@ -22,8 +22,8 @@ module CarryOut
 
     def self.parameter(method_name, var = nil)
       unless var.nil?
-        define_method(method_name.to_sym) do |value|
-          instance_variable_set("@#{var}", value)
+        define_method(method_name.to_sym) do |*args|
+          instance_variable_set("@#{var}", args.length == 0 ? true : args.first)
           self
         end
       end

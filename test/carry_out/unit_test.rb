@@ -57,4 +57,10 @@ class UnitTest < Minitest::Test
     assert_includes unit.value, nil
     assert_includes unit.value, value
   end
+
+  def test_that_boolean_parameter_can_chain
+    unit = ParameterizedUnit.new.with_test.and_test('test')
+
+    assert_equal [ true, 'test' ], unit.value
+  end
 end
