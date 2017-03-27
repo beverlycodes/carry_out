@@ -23,7 +23,13 @@ module CarryOut
       unit = @unitClass.respond_to?(:execute) ? @unitClass : @unitClass.new
 
       @messages.each do |message|
-        arg = message[:block] ? message[:block].call(context) : message[:argument]
+        arg =
+          if message[:block]
+            Context.new(context).instance_exec(context, &message[:block])
+          else
+            message[:argument]
+          end
+
         unit.send(message[:method], arg)
       end
 
@@ -46,7 +52,7 @@ module CarryOut
 
         if @unitClass.instance_methods.include?(method)
           if args.first.kind_of?(Reference)
-            @messages << { method: method, block: args.first }
+            @messages << { method: method, block: -> (refs) { args.first.call(refs) } }
           else
             @messages << { method: method, argument: args.first || true, block: block }
           end

@@ -241,7 +241,7 @@ CarryOut.defaults = {
 }
 ```
 
-#### Magic will\_, then\_, and within\_
+#### will\_, then\_, and within\_ Directives
 
 The magic versions of `will`, `then`, and `within` will use the configured search strategy to convert the remaning portion of the directive into a class reference.
 
@@ -256,7 +256,7 @@ end
 plan = CarryOut.will_say_hello
 ```
 
-#### Magic returning\_as\_
+#### returning\_as\_ Directive
 
 The magic `returning_as_` directive is an alternative to passing the `as:` option to a `will`/`then` directive.  The remainder of the directive becomes the key symbol into which the unit's return value will be stored.
 
@@ -266,6 +266,45 @@ plan = CarryOut
     .returning_as_message
   .then_log
     .message(CarryOut.get(:message))
+```
+
+#### result\_of\_ Directive
+
+The magic `result_of_` directive is available within blocks passed to parameter methods.  The remainder of the directive becomes the context key symbol from which the value will be retreived.
+
+```ruby
+plan = CarryOut
+  .will_receive_message
+    .returning_as_message
+  .then_log
+    .message { result_of_message }
+    # instead of .message(CarryOut.get(:message)
+    # or .message { |refs| refs.message }
+```
+
+#### Example using all available magic
+
+While a contrived example, the following illustrates the improved readability of a plan when using the magic directives.
+
+```ruby
+plan = CarryOut
+  .within_order_transaction
+      .will_order_bagel
+        .flavored('everything')
+        .toasted
+        .topped_with('butter')
+        .and('strawberry cream cheese')
+        .returning_as_bagel
+      .then_order_coffee
+        .with_cream
+        .and_sugar
+      .then_calculate_order_total
+        .for { result_of_bagel }
+        .and { result_of_coffee }
+      .then_swipe_credit_card
+        .returning_as_cc
+      .then_pay
+        .with_credit_card { result_of_cc }
 ```
 
 ## Motivation

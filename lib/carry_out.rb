@@ -1,5 +1,6 @@
 require "carry_out/version"
 
+require "carry_out/context"
 require "carry_out/error"
 require "carry_out/plan"
 require "carry_out/plan_node"

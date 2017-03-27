@@ -80,4 +80,21 @@ class ReferencesTest < Minitest::Test
       assert_nil result.artifacts[:receive]
     end
   end
+
+  def test_that_unit_references_are_accessible_via_magic_block_method
+    message = 'test'
+
+    plan = CarryOut
+      .configured_with(search: [ ReferencesTest ])
+      .will_send
+        .message { result_of_message }
+        .returning_as_send
+      .then_receive
+        .message { result_of_send }
+        .returning_as_receive
+
+    plan.execute(message: message) do |result|
+      assert_equal message, result.artifacts[:receive]
+    end
+  end
 end
