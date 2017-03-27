@@ -49,7 +49,7 @@ module CarryOut
     end
 
     def unless(reference = nil, &block)
-      self.if { |refs| !(reference || block).call(refs) }
+      self.if { |refs| !self.instance_exec(refs, &(reference || block)) }
       
       self
     end
@@ -143,8 +143,15 @@ module CarryOut
       end
 
       def guard_node(node, artifacts)
+        context = Context.new(artifacts)
         guards = node_meta(node)[:guards]
-        guards.nil? || guards.map { |guard| guard.call(artifacts) }.all?
+        guards.nil? || guards.map do |guard|
+          if guard.kind_of?(CarryOut::Reference)
+            reference_proc = -> (refs) { guard.call(refs) }
+          end
+
+          context.instance_exec(artifacts, &(reference_proc || guard))
+        end.all?
       end
 
       def key_for_node(node)

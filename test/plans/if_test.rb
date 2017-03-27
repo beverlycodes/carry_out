@@ -73,4 +73,14 @@ class IfTest < Minitest::Test
 
     assert_nil result.artifacts[:echo]
   end
+
+  def test_that_guards_can_use_magic_result_of
+    plan = Plan.new(Echo, as: :echo)
+      .message('test')
+      .unless { result_of_silent }
+
+    result = plan.execute(silent: true)
+
+    assert_nil result.artifacts[:echo]
+  end
 end
