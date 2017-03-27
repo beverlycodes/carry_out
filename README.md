@@ -298,6 +298,7 @@ plan = CarryOut
       .then_order_coffee
         .with_cream
         .and_sugar
+        .returning_as_coffee
       .then_calculate_order_total
         .for { result_of_bagel }
         .and { result_of_coffee }
