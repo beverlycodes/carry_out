@@ -39,11 +39,17 @@ module CarryOut
       self
     end
 
-    def will(*args)
-      self.then(*args)
+    def will(*args, &block)
+      self.then(*args, &block)
     end
 
-    def then(unit = nil, options = {})
+    def then(unit = nil, options = {}, &block)
+      if unit.kind_of?(Hash)
+        options = unit
+        unit = nil
+      end
+
+      unit = block if unit.nil?
       add_node(PlanNode.new(unit), options[:as]) unless unit.nil?
       self
     end
@@ -118,7 +124,7 @@ module CarryOut
         publish_to = meta[:as]
 
         begin
-          node_result = node.execute(result.artifacts)
+          node_result = node.respond_to?(:execute) ? node.execute(result.artifacts) : node.call(result.artifacts)
           result.add(publish_to, node_result) unless publish_to.nil?
         rescue UnitError => error
           result.add(publish_to || key_for_node(node), CarryOut::Error.new(error.error.message, error.error))

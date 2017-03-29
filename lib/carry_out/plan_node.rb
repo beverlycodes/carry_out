@@ -16,11 +16,15 @@ module CarryOut
     end
 
     def respond_to?(method)
-      @unitClass.instance_methods.include?(method) || super
+      if @unitClass.respond_to?(:instance_methods)
+        @unitClass.instance_methods.include?(method) || super
+      else
+        @unitClass.respond_to?(method) || super
+      end
     end
 
     def execute(context)
-      unit = @unitClass.respond_to?(:execute) ? @unitClass : @unitClass.new
+      unit = is_callable?(@unitClass) ? @unitClass : @unitClass.new
 
       @messages.each do |message|
         arg =
@@ -34,7 +38,7 @@ module CarryOut
       end
 
       begin
-        unit.execute
+        unit.respond_to?(:execute) ? unit.execute : unit.call(context)
       rescue StandardError => error
         raise UnitError.new(error)
       end
@@ -59,6 +63,10 @@ module CarryOut
         else
           raise NoMethodError.new("#{@unitClass} instances do not respond to `#{method}'", method, *args)
         end
+      end
+
+      def is_callable?(obj)
+        obj.respond_to?(:execute) || obj.respond_to?(:call)
       end
       
       def is_parameter_method?(*args, &block)

@@ -70,4 +70,11 @@ class ThenTest < Minitest::Test
         .of(message)
     end
   end
+
+  def test_that_then_can_call_a_block
+    message = 'test'
+    plan = CarryOut.will(as: :test) { |refs| refs[:message] }
+    result = plan.execute(message: message)
+    assert_equal message, result.artifacts[:test]
+  end
 end

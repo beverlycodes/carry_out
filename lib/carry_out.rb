@@ -23,17 +23,11 @@ module CarryOut
     end
 
     def method_missing(method, *args, &block)
-      if MATCH_CONTINUATION_METHOD =~ method
-        create_plan.send(method, *args, &block)
-      elsif MATCH_WITHIN_METHOD =~ method
+      if MATCH_CONTINUATION_METHOD =~ method || MATCH_WITHIN_METHOD =~ method || Plan.instance_methods.include?(method)
         create_plan.send(method, *args, &block)
       else
         super
       end
-    end
-
-    def will(*args)
-      create_plan.will(*args)
     end
 
     def within(wrapper = nil, &block)
