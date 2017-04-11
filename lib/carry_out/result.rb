@@ -14,21 +14,23 @@ module CarryOut
           message: object.message,
           details: object.details
         )
-      elsif object.kind_of?(Enumerable) && object.all? { |o| o.kind_of?(CarryOut::Error) }
+      elsif object.kind_of?(Enumerable) && !object.kind_of?(Hash)
         object.each { |o| add(group, o) }
-      elsif object.kind_of?(Result)
-        add(group, object.to_hash)
-        
-        object.errors.each do |error|
-          add([group, error.group].flatten(1), e)
-        end
-      elsif object.kind_of?(Hash)
-        artifacts[group] ||= {}
-        object.each { |k,v| artifacts[group][k] = v }
-      elsif !artifacts[group].nil?
-        artifacts[group] = [ artifacts[group], object ].flatten(1)
       else
-        artifacts[group] = object
+        unless group.nil?
+          if object.kind_of?(Hash)
+            artifacts[group] ||= {}
+            object.each { |k,v| artifacts[group][k] = v }
+          elsif object.kind_of?(Result)
+            add(group, object.to_hash)
+            
+            object.errors.each do |error|
+              add([group, error.group].flatten(1), e)
+            end
+          else
+            artifacts[group] = object
+          end
+        end
       end
     end
 

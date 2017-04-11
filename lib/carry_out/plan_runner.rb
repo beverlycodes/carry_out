@@ -14,20 +14,16 @@ module CarryOut
           begin
             node_result = node.call(plan_result.artifacts)
 
-            if node_result.kind_of?(Plan::NodeResult) && node.returns_as
+            if node_result.kind_of?(Plan::NodeResult)
               plan_result.add(node.returns_as, node_result.value)
-
-              if node_result.value.kind_of?(CarryOut::Result) && !node_result.value.success?
-                break
-              end
             end
-
-            node = node.connects_to
           rescue StandardError => error
-            error = CarryOut::Error.new(error.message, error) unless error.instance_of?(CarryOut::Error)
-            plan_result.add (node.returns_as || :base), error 
-            break
+            error = CarryOut::Error.new(error.message, error) unless error.kind_of?(CarryOut::Error)
+            plan_result.add node.returns_as, error 
           end
+
+          break unless plan_result.success?
+          node = node.connects_to
         end
       end
     end

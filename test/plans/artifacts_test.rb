@@ -54,8 +54,9 @@ class ArtifactsTest < Minitest::Test
     assert_equal message, result.artifacts[:echo][:message2]
   end
 
-  def test_that_repeat_label_becomes_array
+  def test_that_repeat_label_is_overwritten
     message = 'test'
+    message2 = 'test2'
 
     plan = CarryOut.plan do
       call Echo do
@@ -64,16 +65,14 @@ class ArtifactsTest < Minitest::Test
       end
 
       then_call Echo do
-        action.message message
+        action.message message2
         return_as :echo
       end
     end
 
     result = plan.call
 
-    assert_kind_of Array, result.artifacts[:echo]
-    assert_equal message, result.artifacts[:echo][0]
-    assert_equal message, result.artifacts[:echo][1]
+    assert_equal message2, result.artifacts[:echo]
   end
 
   def test_that_return_value_can_be_refined_by_block
