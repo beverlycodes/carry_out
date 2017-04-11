@@ -13,6 +13,10 @@ class ErrorTest < Minitest::Test
     def call; raise StandardError.new('Raised an error'); end
   end
 
+  class ReturnError < Unit
+    def call; 2.times.map { CarryOut::Error.new('Returned an error') }; end
+  end
+
   def test_that_expected_errors_are_added_to_result
     plan = CarryOut.plan do
       call RaiseError do
@@ -22,12 +26,17 @@ class ErrorTest < Minitest::Test
 
     result = plan.call
 
-    refute result.errors[:test_unit].empty?
-    assert_equal 'Raised an error', result.errors[:test_unit].first.message
-    assert_instance_of StandardError, result.errors[:test_unit].first.details
+    refute result.errors.empty?
+    assert_equal 1, result.errors.length
+
+    error = result.errors.first
+
+    assert_equal 'Raised an error', error.message
+    assert_equal :test_unit, error.group
+    assert_instance_of StandardError, error.details
   end
 
-  def test_that_execution_ends_after_error
+  def test_that_execution_ends_after_raised_error
     plan = CarryOut.plan do
       call RaiseError do
         return_as :test_unit
@@ -42,5 +51,18 @@ class ErrorTest < Minitest::Test
     result = plan.call
     refute result.success?, "Expected result to indicate failure"
     assert_nil result.artifacts[:echo]
+  end
+
+  def test_that_multiple_errors_can_be_returned
+    plan = CarryOut.plan do
+      call ReturnError do
+        return_as :test_unit
+      end
+    end
+
+    result = plan.call
+    refute result.success?, "Expected result to indicate failure"
+    refute_empty result.errors
+    assert_equal 2, result.errors.length
   end
 end

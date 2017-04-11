@@ -1,3 +1,5 @@
+require 'carry_out/result_error'
+
 module CarryOut
   class Result
 
@@ -7,12 +9,18 @@ module CarryOut
 
     def add(group, object)
       if object.kind_of?(CarryOut::Error)
-        add_error(group, object)
+        errors << ResultError.new(
+          group: group,
+          message: object.message,
+          details: object.details
+        )
+      elsif object.kind_of?(Enumerable) && object.all? { |o| o.kind_of?(CarryOut::Error) }
+        object.each { |o| add(group, o) }
       elsif object.kind_of?(Result)
         add(group, object.to_hash)
         
-        object.errors.each do |g, errors|
-          errors.each { |e| add(g,e) }
+        object.errors.each do |error|
+          add([group, error.group].flatten(1), e)
         end
       elsif object.kind_of?(Hash)
         artifacts[group] ||= {}
@@ -29,7 +37,7 @@ module CarryOut
     end
 
     def errors
-      @errors ||= {}
+      @errors ||= []
     end
 
     def success?
@@ -39,11 +47,5 @@ module CarryOut
     def to_hash
       artifacts
     end
-
-    private
-      def add_error(group, error)
-        group = errors[group] ||= []
-        group << error
-      end
   end
 end

@@ -24,7 +24,8 @@ module CarryOut
 
             node = node.connects_to
           rescue StandardError => error
-            plan_result.add (node.returns_as || :base), CarryOut::Error.new(error.message, error)
+            error = CarryOut::Error.new(error.message, error) unless error.instance_of?(CarryOut::Error)
+            plan_result.add (node.returns_as || :base), error 
             break
           end
         end

@@ -56,4 +56,19 @@ class CarryOutTest < Minitest::Test
 
     assert_equal 'test', result.artifacts[:echo]
   end
+
+  def test_that_runner_yields_to_a_block
+    plan = CarryOut.plan do
+      call Echo do
+        message 'test'
+        return_as :echo
+      end
+    end
+
+    result = nil
+
+    plan.call { |r| result = r }
+    
+    assert_equal 'test', result.artifacts[:echo]
+  end
 end

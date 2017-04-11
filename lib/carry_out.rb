@@ -27,7 +27,12 @@ module CarryOut
   def self.plan(options = {}, &block)
     merged_options = Hash.new.merge(configuration).merge(options)
     plan = PlanBuilder.build(merged_options, &block)
-    -> (context = nil) { PlanRunner.run(plan, context) }
+
+    Proc.new do |context = nil, &block| 
+      PlanRunner.run(plan, context).tap do |result|
+        block.call(result) unless block.nil?
+      end
+    end
   end
 
   def self.configuration
