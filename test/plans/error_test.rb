@@ -6,20 +6,21 @@ class ErrorTest < Minitest::Test
   class Echo < Unit
     parameter :message
 
-    def execute
-      @message
-    end
+    def call; @message; end
   end
 
   class RaiseError < Unit
-    def execute
-      raise StandardError.new('Raised an error')
-    end
+    def call; raise StandardError.new('Raised an error'); end
   end
 
   def test_that_expected_errors_are_added_to_result
-    plan = CarryOut.will(RaiseError, as: :test_unit)
-    result = plan.execute
+    plan = CarryOut.plan do
+      call RaiseError do
+        return_as :test_unit
+      end
+    end
+
+    result = plan.call
 
     refute result.errors[:test_unit].empty?
     assert_equal 'Raised an error', result.errors[:test_unit].first.message
@@ -27,12 +28,19 @@ class ErrorTest < Minitest::Test
   end
 
   def test_that_execution_ends_after_error
-    plan = CarryOut
-      .will(RaiseError, as: :test_unit)
-      .then(Echo)
-      .message { |refs| flunk "Execution should have stopped" }
+    plan = CarryOut.plan do
+      call RaiseError do
+        return_as :test_unit
+      end
 
-    result = plan.execute
+      call Echo do
+        message 'test'
+        return_as :echo
+      end
+    end
+
+    result = plan.call
     refute result.success?, "Expected result to indicate failure"
+    assert_nil result.artifacts[:echo]
   end
 end

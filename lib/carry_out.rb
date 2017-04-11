@@ -1,63 +1,40 @@
-require "carry_out/version"
+require 'carry_out/version'
 
-require "carry_out/context"
-require "carry_out/error"
-require "carry_out/plan"
-require "carry_out/plan_node"
-require "carry_out/reference"
-require "carry_out/result"
-require "carry_out/unit"
-require "carry_out/unit_error"
+require 'carry_out/configurator'
+require 'carry_out/error'
+require 'carry_out/result'
+require 'carry_out/unit'
+
+require 'carry_out/plan_builder'
+require 'carry_out/plan_runner'
 
 module CarryOut
-  MATCH_CONTINUATION_METHOD = /^will_/
-  MATCH_WITHIN_METHOD = /^within_/
-
-  class ConfiguredCarryOut
+  class ConfiguredInstance
     def initialize(options = {})
-      @config = options
+      @options = Hash.new
+      @options[:search] = options[:search] if options.has_key?(:search)
     end
 
-    def get(*args)
-      Reference.new(*args)
+    def plan(options = {}, &block)
+      CarryOut.plan(Hash.new.merge(@options).merge(options), &block) 
     end
-
-    def method_missing(method, *args, &block)
-      if MATCH_CONTINUATION_METHOD =~ method || MATCH_WITHIN_METHOD =~ method || Plan.instance_methods.include?(method)
-        create_plan.send(method, *args, &block)
-      else
-        super
-      end
-    end
-
-    def within(wrapper = nil, &block)
-      create_plan(within: wrapper || block)
-    end
-
-    private
-      def create_plan(options = {})
-        Plan.new(nil, @config.merge(options))
-      end
   end
 
-  def self.configured_with(options = {})
-    ConfiguredCarryOut.new(options)
+  def self.configure(&block)
+    Configurator.new(configuration).instance_eval(&block)
   end
 
-  def self.defaults=(options = {})
-    @default_options = options
-    @default_carry_out = nil
+  def self.plan(options = {}, &block)
+    merged_options = Hash.new.merge(configuration).merge(options)
+    plan = PlanBuilder.build(merged_options, &block)
+    -> (context = nil) { PlanRunner.run(plan, context) }
   end
 
-  def self.method_missing(method, *args, &block)
-    default_carry_out.send(method, *args, &block)
+  def self.configuration
+    @configuration ||= {}
   end
 
-  def self.default_options
-    @default_options ||= Hash.new
-  end
-
-  def self.default_carry_out
-    @default_carry_out ||= ConfiguredCarryOut.new(default_options)
+  def self.with_configuration(options = {})
+    ConfiguredInstance.new(options)
   end
 end

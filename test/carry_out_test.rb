@@ -3,71 +3,57 @@ require 'test_helper'
 class CarryOutTest < Minitest::Test
   class Echo < CarryOut::Unit
     parameter :message
-
-    def execute
-      @message
-    end
-  end
-
-  class Context
-    def execute
-      yield test: 'test'
-    end
+    def call; @message; end
   end
 
   def test_that_it_has_a_version_number
     refute_nil ::CarryOut::VERSION
   end
 
-  def test_that_will_returns_a_plan_instance
-    plan = CarryOut.will
-    assert plan.instance_of?(CarryOut::Plan)
-  end
-
-  def test_that_plan_can_execute_within_a_context
-    plan = CarryOut
-      .within(Context.new)
-      .will(Echo, as: :echo)
-      .message { |refs| refs[:test] }
-
-    result = plan.execute
-    assert_equal 'test', result.artifacts[:echo]
-  end
-
-  def test_that_plan_can_execute_within_a_magic_context
-    plan = CarryOut
-      .configured_with(search: [ CarryOutTest ])
-      .within_context
-      .will(Echo, as: :echo)
-      .message { |refs| refs[:test] }
-
-    result = plan.execute
-    assert_equal 'test', result.artifacts[:echo]
-  end
-
-  def test_that_plan_can_execute_within_a_context_block
-    plan = CarryOut
-      .within { |proc| proc.call test: 'test' }
-      .will(Echo, as: :echo)
-      .message { |refs| refs[:test] }
-
-    result = plan.execute
-    assert_equal 'test', result.artifacts[:echo]
-  end
-
-  def test_that_plan_can_execute_with_empty_context
-    plan = CarryOut
-      .within { |proc| proc.call }
-      .will(Echo, as: :echo)
-      .message('test')
-
-    result = plan.execute
-    assert_equal 'test', result.artifacts[:echo]
-  end
-
-  def test_that_method_missing_falls_back_to_super
-    assert_raises NoMethodError do
-      CarryOut.bad_method
+  def test_that_it_can_have_default_options
+    CarryOut.configure do 
+      search CarryOutTest
     end
+
+    plan = CarryOut.plan do
+      echo do
+        message 'test'
+        return_as :echo
+      end
+    end
+
+    result = plan.call
+
+    assert_equal 'test', result.artifacts[:echo]
+  end
+
+  def test_that_search_can_take_a_lambda
+    CarryOut.configure do 
+      search -> (name) { Echo }
+    end
+
+    plan = CarryOut.plan do
+      echo do
+        message 'test'
+        return_as :echo
+      end
+    end
+
+    result = plan.call
+
+    assert_equal 'test', result.artifacts[:echo]
+  end
+
+  def test_that_it_can_cache_a_configuration
+    plan = CarryOut.with_configuration(search: [ CarryOutTest ]).plan do
+      echo do
+        message 'test'
+        return_as :echo
+      end
+    end
+
+    result = plan.call
+
+    assert_equal 'test', result.artifacts[:echo]
   end
 end

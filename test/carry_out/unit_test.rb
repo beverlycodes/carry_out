@@ -3,11 +3,13 @@ require 'test_helper'
 class UnitTest < Minitest::Test
   include CarryOut
 
+  class AbstractUnit < Unit; end
+
   class ParameterizedUnit < Unit
     parameter :with_test, :value
     appending_parameter :and_test, :value
 
-    def execute; @value; end
+    def call; @value; end
   end
 
   def test_that_unit_has_parameter_method
@@ -16,7 +18,7 @@ class UnitTest < Minitest::Test
 
     assert_respond_to unit, :with_test
 
-    result = unit.execute
+    result = unit.call
     assert_equal value, result
   end
 
@@ -26,7 +28,7 @@ class UnitTest < Minitest::Test
     result = ParameterizedUnit.new
       .with_test(value)
       .and_test(value2)
-      .execute
+      .call
 
     assert_kind_of Array, result
     assert_includes result, value
@@ -38,7 +40,7 @@ class UnitTest < Minitest::Test
 
     result = ParameterizedUnit.new
       .and_test(value)
-      .execute
+      .call
 
     assert_kind_of Array, result
     assert result.length == 1, "Expected length of #{result.length} to be 1"
@@ -51,7 +53,7 @@ class UnitTest < Minitest::Test
     result = ParameterizedUnit.new
       .with_test(nil)
       .and_test(value)
-      .execute
+      .call
 
     assert_kind_of Array, result
     assert result.length == 2, "Expected length of #{result.length} to be 2"
@@ -63,8 +65,14 @@ class UnitTest < Minitest::Test
     result = ParameterizedUnit.new
       .with_test
       .and_test('test')
-      .execute
+      .call
 
     assert_equal [ true, 'test' ], result
+  end
+
+  def test_that_abstract_unit_raises
+    assert_raises do
+      AbstractUnit.new.call
+    end
   end
 end

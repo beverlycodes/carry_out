@@ -1,7 +1,18 @@
 module CarryOut
   class Unit
     
-    def execute
+    def call
+      raise "Expected #{self.class} to define #{self.class}#call" unless self.class == Unit
+    end
+
+    def self.call(&block)
+      unit = self.new
+      yield unit if block
+      unit.call
+    end
+
+    def self.has_parameter?(method)
+      self.instance_methods.include?(method)
     end
 
     def self.appending_parameter(method_name, var)

@@ -6,19 +6,20 @@ class EchoTest < Minitest::Test
   class Echo < Unit
     parameter :message
 
-    def execute
-      { message: @message }
-    end
+    def call; { message: @message }; end
   end
 
   def test_that_unit_receives_parameters
     message = 'test'
 
-    plan = CarryOut
-      .will(Echo, as: :test_unit)
-      .message(message)
+    plan = CarryOut.plan(search: [ EchoTest ]) do
+      echo do
+        action.message context(:message)
+        return_as :test_unit
+      end
+    end
 
-    result = plan.execute
+    result = plan.call(message: message)
 
     assert_equal message, result.artifacts[:test_unit][:message]
   end

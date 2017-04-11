@@ -6,57 +6,49 @@ class ArtifactsTest < Minitest::Test
   class Echo < Unit
     parameter :message
 
-    def execute
-      @message
-    end
+    def call; @message; end
   end
 
   class EchoToHash < Unit
     parameter :key
     parameter :message
 
-    def execute
-      Hash[@key, @message]
-    end
+    def call; Hash[@key, @message]; end
   end
 
   def test_that_returning_as_sets_context_key
     message = 'test'
 
-    plan = CarryOut
-      .will(Echo)
-      .message(message)
-      .returning_as_message
+    plan = CarryOut.plan do
+      call Echo do
+        action.message message
+        return_as :echo
+      end
+    end
 
-    result = plan.execute
+    result = plan.call
 
-    assert_equal message, result.artifacts[:message]
-  end
-
-  def test_that_unit_sets_top_level_artifact
-    message = 'test'
-
-    plan = CarryOut
-      .will(Echo, as: :message)
-      .message(message)
-
-    result = plan.execute
-
-    assert_equal message, result.artifacts[:message]
+    assert_equal message, result.artifacts[:echo]
   end
 
   def test_that_hashes_are_merged
     message = 'test'
 
-    plan = CarryOut
-      .will(EchoToHash, as: :echo)
-        .key(:message1)
-        .message(message)
-      .then(EchoToHash, as: :echo)
-        .key(:message2)
-        .message(message)
+    plan = CarryOut.plan do
+      call EchoToHash do
+        key :message1
+        action.message message
+        return_as :echo
+      end
 
-    result = plan.execute
+      then_call EchoToHash do
+        key :message2
+        action.message message
+        return_as :echo
+      end
+    end
+
+    result = plan.call(message: message)
 
     assert_equal message, result.artifacts[:echo][:message1]
     assert_equal message, result.artifacts[:echo][:message2]
@@ -65,14 +57,38 @@ class ArtifactsTest < Minitest::Test
   def test_that_repeat_label_becomes_array
     message = 'test'
 
-    plan = CarryOut
-      .will(Echo, as: :echo).message(message)
-      .then(Echo, as: :echo).message(message)
+    plan = CarryOut.plan do
+      call Echo do
+        action.message message
+        return_as :echo
+      end
 
-    result = plan.execute
+      then_call Echo do
+        action.message message
+        return_as :echo
+      end
+    end
+
+    result = plan.call
 
     assert_kind_of Array, result.artifacts[:echo]
     assert_equal message, result.artifacts[:echo][0]
     assert_equal message, result.artifacts[:echo][1]
+  end
+
+  def test_that_return_value_can_be_refined_by_block
+    message = 'test'
+
+    plan = CarryOut.plan do
+      call EchoToHash do
+        key :echo_key
+        action.message message
+        return_as (:echo) { |result| result[:echo_key] }
+      end
+    end
+
+    result = plan.call
+
+    assert_equal message, result.artifacts[:echo]
   end
 end

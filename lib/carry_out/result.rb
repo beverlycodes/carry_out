@@ -10,6 +10,10 @@ module CarryOut
         add_error(group, object)
       elsif object.kind_of?(Result)
         add(group, object.to_hash)
+        
+        object.errors.each do |g, errors|
+          errors.each { |e| add(g,e) }
+        end
       elsif object.kind_of?(Hash)
         artifacts[group] ||= {}
         object.each { |k,v| artifacts[group][k] = v }

@@ -3,30 +3,60 @@ require 'test_helper'
 class PlanInPlanTest < Minitest::Test
   include CarryOut
 
+  class RaiseError < Unit
+    def call; raise CarryOut::Error, 'Error'; end
+  end
+
   class Message < Unit
     parameter :message
 
-    def execute
-      @message
-    end
+    def call; @message; end
   end
 
   def test_that_plans_can_be_used_in_place_of_units
     message = 'test'
     message2 = 'test2'
 
-    plan = CarryOut
-      .will(Message, as: :test_unit)
-      .message(message)
-      .then(Message, as: :test_unit2)
-      .message(message2)
+    plan = CarryOut.plan do
+      call Message do
+        action.message message
+        return_as :test_unit
+      end
 
-    plan2 = CarryOut
-      .will(plan, as: :plan1)
+      then_call Message do
+        action.message message2
+        return_as :test_unit2
+      end
+    end
 
-    result = plan2.execute
+    plan2 = CarryOut.plan do
+      call plan do
+        return_as :plan1
+      end
+    end
+
+    result = plan2.call
 
     assert_equal message, result.artifacts[:plan1][:test_unit]
     assert_equal message2, result.artifacts[:plan1][:test_unit2]
+  end
+
+  def test_that_embedded_plans_include_errors
+    message = 'test'
+    message2 = 'test2'
+
+    plan = CarryOut.plan do
+      call RaiseError
+    end
+
+    plan2 = CarryOut.plan do
+      call plan do
+        return_as :plan1
+      end
+    end
+
+    result = plan2.call
+
+    refute result.success?
   end
 end
