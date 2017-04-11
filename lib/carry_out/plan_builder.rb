@@ -60,9 +60,9 @@ module CarryOut
           return obj if obj
 
           if m.respond_to?(:call)
-            obj = m.call(constant_name)
+            m.call(constant_name)
           else
-            obj = m.const_get(constant_name) rescue nil
+            m.const_get(constant_name) rescue nil
           end
         end
       end

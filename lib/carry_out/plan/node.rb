@@ -15,7 +15,7 @@ module CarryOut
         @messages = []
       end
 
-      def call(context = {}, guard = true)
+      def call(context = {})
         return NodeResult.new unless @action
         return unless guard(context)
 
@@ -37,7 +37,7 @@ module CarryOut
       end
 
       def guard_with(guard)
-        guard = guard.respond_to?(:call) ? guard : -> (context) { guard }
+        guard = guard.respond_to?(:call) ? guard : Proc.new { guard }
         guarded_by.push Guard.new(guard)
       end
 

@@ -16,11 +16,11 @@ module CarryOut
       end
 
       def only_when(value = nil, &block)
-        @node.guard_with (value || block)
+        @node.guard_with(value || block)
       end
 
       def except_when(value = nil, &block)
-        @node.guard_with_inverse (value || block)
+        @node.guard_with_inverse(value || block)
       end
 
       def method_missing(method, *args, &block)
