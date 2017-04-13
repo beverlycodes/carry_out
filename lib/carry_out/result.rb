@@ -14,7 +14,7 @@ module CarryOut
           message: object.message,
           details: object.details
         )
-      elsif object.kind_of?(Enumerable) && !object.kind_of?(Hash)
+      elsif object.kind_of?(Enumerable) && object.all? { |o| o.kind_of?(CarryOut::Error) }
         object.each { |o| add(group, o) }
       else
         unless group.nil?
@@ -40,6 +40,16 @@ module CarryOut
 
     def errors
       @errors ||= []
+    end
+
+    def errors_hash
+      Hash.new.tap do |h|
+        errors.each do |e|
+          if e.details.kind_of?(Hash)
+            h.merge!(e.details)
+          end
+        end
+      end
     end
 
     def success?
