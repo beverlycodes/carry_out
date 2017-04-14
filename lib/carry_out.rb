@@ -18,6 +18,14 @@ module CarryOut
     def plan(options = {}, &block)
       CarryOut.plan(Hash.new.merge(@options).merge(options), &block) 
     end
+
+    def call_unit(*args, &block)
+      CarryOut.call_unit(*args)
+    end
+  end
+
+  def self.call_unit(*args, &block)
+    PlanRunner.call_unit(*args, &block)
   end
 
   def self.configure(&block)
@@ -29,7 +37,7 @@ module CarryOut
     plan = PlanBuilder.build(merged_options, &block)
 
     Proc.new do |context = nil, &block| 
-      PlanRunner.run(plan, context).tap do |result|
+      PlanRunner.call(plan, context).tap do |result|
         block.call(result) unless block.nil?
       end
     end

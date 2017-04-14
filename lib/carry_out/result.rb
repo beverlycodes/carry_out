@@ -9,11 +9,16 @@ module CarryOut
 
     def add(group, object)
       if object.kind_of?(CarryOut::Error)
-        errors << ResultError.new(
-          group: group,
+        object = ResultError.new(
           message: object.message,
           details: object.details
         )
+      end
+
+      if object.kind_of?(CarryOut::ResultError)
+        group = group || :_unlabeled
+        errors[group] ||= []
+        errors[group] << object
       elsif object.kind_of?(Enumerable) && object.all? { |o| o.kind_of?(CarryOut::Error) }
         object.each { |o| add(group, o) }
       else
@@ -22,10 +27,12 @@ module CarryOut
             artifacts[group] ||= {}
             object.each { |k,v| artifacts[group][k] = v }
           elsif object.kind_of?(Result)
-            add(group, object.to_hash)
-            
-            object.errors.each do |error|
-              add([group, error.group].flatten(1), e)
+            add(group, object.artifacts)
+
+            object.errors.each do |g, errors|
+              error_group = [ group, g ]
+
+              errors.each { |e| add(error_group, e) }
             end
           else
             artifacts[group] = object
@@ -39,25 +46,11 @@ module CarryOut
     end
 
     def errors
-      @errors ||= []
-    end
-
-    def errors_hash
-      Hash.new.tap do |h|
-        errors.each do |e|
-          if e.details.kind_of?(Hash)
-            h.merge!(e.details)
-          end
-        end
-      end
+      @errors ||= {}
     end
 
     def success?
       @errors.nil? || @errors.empty?
-    end
-
-    def to_hash
-      artifacts
     end
   end
 end

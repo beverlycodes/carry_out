@@ -1,10 +1,6 @@
 module CarryOut
   class PlanRunner
-    def self.run(plan, context = {})
-      PlanRunner.new.run(plan, context)
-    end
-
-    def run(plan, context = {})
+    def self.call(plan, context = {})
       Result.new(context).tap do |plan_result|
         node = plan
 
@@ -26,6 +22,13 @@ module CarryOut
           node = node.connects_to
         end
       end
+    end
+
+    def self.call_unit(unit, context = {}, &block)
+      node = Plan::Node.new(unit)
+      Plan::NodeContext.new(node).instance_eval(&block) unless block.nil?
+
+      call(node, context)
     end
   end
 end

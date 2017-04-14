@@ -29,10 +29,9 @@ class ErrorTest < Minitest::Test
     refute result.errors.empty?
     assert_equal 1, result.errors.length
 
-    error = result.errors.first
+    error = result.errors[:test_unit].first
 
     assert_equal 'Raised an error', error.message
-    assert_equal :test_unit, error.group
     assert_instance_of StandardError, error.details
   end
 
@@ -63,6 +62,6 @@ class ErrorTest < Minitest::Test
     result = plan.call
     refute result.success?, "Expected result to indicate failure"
     refute_empty result.errors
-    assert_equal 2, result.errors.length
+    assert_equal 2, result.errors[:test_unit].length
   end
 end

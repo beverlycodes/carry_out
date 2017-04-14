@@ -71,4 +71,13 @@ class CarryOutTest < Minitest::Test
     
     assert_equal 'test', result.artifacts[:echo]
   end
+
+  def test_that_can_run_single_unit
+    result = CarryOut.call_unit(Echo, message: 'test') do
+      message context(:message)
+      return_as :echo
+    end
+
+    assert_equal 'test', result.artifacts[:echo]
+  end
 end

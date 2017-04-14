@@ -58,5 +58,6 @@ class PlanInPlanTest < Minitest::Test
     result = plan2.call
 
     refute result.success?
+    assert_equal "Error", result.errors[[:plan1, :_unlabeled]].first.message
   end
 end
