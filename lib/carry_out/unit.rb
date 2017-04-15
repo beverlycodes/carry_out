@@ -5,6 +5,12 @@ module CarryOut
       raise "Expected #{self.class} to define #{self.class}#call" unless self.class == Unit
     end
 
+    def initialize
+      self.class.parameter_defaults.each do |p, d|
+        instance_variable_set("@#{p}", d)
+      end
+    end
+
     def self.call(&block)
       unit = self.new
       yield unit if block
@@ -31,13 +37,24 @@ module CarryOut
       end
     end
 
-    def self.parameter(method_name, var = nil)
+    def self.parameter(method_name, var = nil, options = {})
+      if var.kind_of?(Hash)
+        options = var 
+        var = nil
+      end
+
       var ||= method_name
 
       define_method(method_name.to_sym) do |*args|
         instance_variable_set("@#{var}", args.length == 0 ? true : args.first)
         self
       end
+
+      parameter_defaults[var] = options[:default] unless options[:default].nil?
+    end
+
+    def self.parameter_defaults
+      @parameter_defaults ||= {}
     end
   end
 end

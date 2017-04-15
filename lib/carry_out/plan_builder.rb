@@ -3,19 +3,26 @@ require "carry_out/plan/node_context"
 
 module CarryOut
   class PlanBuilder
+    include Cloaker
+
+    attr_reader :plan
+
     def initialize(options = {}, &block)
       @plan = Plan::Node.new
-      @wrapper = nil
       @constant_resolver = [ options[:search] ].flatten(1)
+      @block_binding = options[:block_binding]
 
       configure_node(@plan, &block) if block
     end
 
-    attr_reader :plan
-
     def self.build(options = {}, &block)
+      options = {
+        block_binding: block.binding
+      }.merge(options)
+
       builder = PlanBuilder.new(options)
-      builder.instance_eval(&block)
+
+      builder.cloaker(&block)
       builder.plan
     end
 
@@ -36,7 +43,7 @@ module CarryOut
       obj = find_object(method)
 
       if obj
-        call(method, &block)
+        call(obj, &block)
       else
         super
       end
@@ -46,7 +53,7 @@ module CarryOut
       attr_writer :current_node
 
       def configure_node(node, &block)
-        Plan::NodeContext.new(node).instance_eval(&block)
+        Plan::NodeContext.new(node).cloaker(@block_binding, &block)
       end
 
       def current_node

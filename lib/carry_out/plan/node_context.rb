@@ -1,6 +1,10 @@
+require "carry_out/cloaker"
+
 module CarryOut
   module Plan
     class NodeContext
+      include CarryOut::Cloaker
+
       def initialize(node)
         @node = node
       end
@@ -10,7 +14,7 @@ module CarryOut
       end
 
       def context(*args)
-        -> (context) do
+        Proc.new do |context|
           args.inject(context) { |c, k| c.nil? ? nil : c[k] }
         end
       end
@@ -24,7 +28,11 @@ module CarryOut
       end
 
       def method_missing(method, *args, &block)
-        @node.send(method, *args, &block)
+        if @node.respond_to?(method)
+          @node.send(method, *args, &block)
+        else
+          super
+        end
       end
 
       def respond_to?(method)

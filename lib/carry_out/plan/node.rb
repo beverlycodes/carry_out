@@ -53,8 +53,6 @@ module CarryOut
       def method_missing(method, *args, &block)
         if respond_to?(method)
           @messages.push({ method: method, source: block || (args.length == 0 ? true : args.first) })
-        else
-          raise NoMethodError, "undefined method `#{method}' for #{@action}"
         end
       end
 

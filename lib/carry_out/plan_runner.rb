@@ -13,8 +13,7 @@ module CarryOut
             if node_result.kind_of?(Plan::NodeResult)
               plan_result.add(node.returns_as, node_result.value)
             end
-          rescue StandardError => error
-            error = CarryOut::Error.new(error.message, error) unless error.kind_of?(CarryOut::Error)
+          rescue CarryOut::Error => error
             plan_result.add node.returns_as, error 
           end
 
@@ -26,7 +25,7 @@ module CarryOut
 
     def self.call_unit(unit, context = {}, &block)
       node = Plan::Node.new(unit)
-      Plan::NodeContext.new(node).instance_eval(&block) unless block.nil?
+      Plan::NodeContext.new(node).cloaker(&block) unless block.nil?
 
       call(node, context)
     end

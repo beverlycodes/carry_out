@@ -5,11 +5,23 @@ class UnitTest < Minitest::Test
 
   class AbstractUnit < Unit; end
 
+  class DefaultParameterUnit < Unit
+    parameter :value, default: 'test'
+
+    def call; @value; end
+  end
+
   class ParameterizedUnit < Unit
     parameter :with_test, :value
     appending_parameter :and_test, :value
 
     def call; @value; end
+  end
+
+  def test_that_unit_parameter_has_default
+    unit = DefaultParameterUnit.new
+
+    assert_equal 'test', unit.call
   end
 
   def test_that_unit_has_parameter_method

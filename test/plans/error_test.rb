@@ -10,7 +10,7 @@ class ErrorTest < Minitest::Test
   end
 
   class RaiseError < Unit
-    def call; raise StandardError.new('Raised an error'); end
+    def call; raise CarryOut::Error.new('Raised an error'); end
   end
 
   class ReturnError < Unit
@@ -32,7 +32,6 @@ class ErrorTest < Minitest::Test
     error = result.errors[:test_unit].first
 
     assert_equal 'Raised an error', error.message
-    assert_instance_of StandardError, error.details
   end
 
   def test_that_execution_ends_after_raised_error
