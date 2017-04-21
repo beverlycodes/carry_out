@@ -11,9 +11,9 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{Compose units of logic into an executable workflow.}
   spec.description   = <<-EOF
-    CarryOut connects units of logic into workflows.  Each unit can extend
+    CarryOut connects units of logic into a serial execution.  Each unit can extend
     the DSL with parameter methods.  Artifacts and errors are collected as
-    the workflow executes and are returned in a result bundle upon completion.
+    the series executes and are returned in a result bundle upon completion.
   EOF
 
   spec.homepage      = "https://github.com/ryanfields/carry_out"
