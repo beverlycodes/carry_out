@@ -22,7 +22,7 @@ module CarryOut
     end
    
     def method_missing(method, *args, &block)
-      if @previous_context && @previous_context.respond_to?(method)
+      if @previous_context
         @previous_context.send(method, *args, &block)
       else
         super

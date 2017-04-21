@@ -9,10 +9,6 @@ class BindingTest < Minitest::Test
     def call; @message; end
   end
 
-  def echo(value)
-    value
-  end
-
   def test_that_binding_is_maintained_for_single_unit
     test_message = 'test'
 
@@ -38,4 +34,9 @@ class BindingTest < Minitest::Test
 
     assert_equal test_message, result.artifacts[:echo]
   end
+
+  private
+    def echo(value)
+      value
+    end
 end
